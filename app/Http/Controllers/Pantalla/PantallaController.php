@@ -17,34 +17,28 @@ class PantallaController extends Controller
         // País por defecto: Honduras ('hn') — puedes cambiarlo a 'cr' si lo prefieres
         return $this->publicaPorPais($request, 'HN');
     }
+    
     /**
      * Mostrar pantalla pública filtrada por país
      * URL ejemplo: /pantalla/hn o /pantalla/cr
      */
-    public function publicaPorPais(Request $request, $pais)
+    public function publicaPorPais(Request $request, $pais = 'HN')
     {
-        $map = [
-            'HN' => 1,
-            'CR' => 2,
+        // Determinar sucursal según país
+        $mapaSucursales = [
+            'HN' => 1, // Tegucigalpa
+            'CR' => 2, // San José
         ];
-
-        if (!isset($map[$pais])) {
-            abort(404);
-        }
-
-        $idPais = $map[$pais];
-
-        $sucursales = DB::table('sucursal')
-            ->join('sociedad', 'sociedad.id_sociedad', '=', 'sucursal.id_sociedad')
-            ->where('sociedad.id_pais', $idPais)
-            ->pluck('sucursal.id_sucursal')
-            ->toArray();
+        $idSucursal = $mapaSucursales[strtoupper($pais)] ?? 1;
+        
+        $sucursales = [$idSucursal];
 
         // 🔵 TURNOS ACTUALES POR CAJA
         $actuales = DB::table('turnos')
             ->leftJoin('ventanillas', 'ventanillas.id_ventanilla', '=', 'turnos.id_ventanilla')
             ->whereIn('turnos.estado', ['atendiendo', 'pausado'])
-            ->whereIn('ventanillas.id_sucursal', $sucursales)
+            ->where('turnos.origen', 'kiosco')
+            ->whereIn('turnos.id_sucursal', $sucursales)
             ->select(
                 'turnos.numero',
                 'turnos.estado',
@@ -54,17 +48,20 @@ class PantallaController extends Controller
             ->get()
             ->groupBy('caja');
 
-        // 🟡 COLA
+        // 🟡 COLA DE ESPERA
         $cola = DB::table('turnos')
             ->where('estado', 'espera')
+            ->where('origen', 'kiosco')
             ->whereIn('id_sucursal', $sucursales)
+            ->orderByRaw("CASE WHEN tipo='preferencial' THEN 0 ELSE 1 END")
             ->orderBy('hora_creacion')
             ->get(['numero', 'tipo']);
 
-        // 🟢 RECIENTES
+        // 🟢 TURNOS RECIENTES
         $recientes = DB::table('turnos')
             ->leftJoin('ventanillas', 'ventanillas.id_ventanilla', '=', 'turnos.id_ventanilla')
             ->where('turnos.estado', 'finalizado')
+            ->where('turnos.origen', 'kiosco')
             ->whereIn('turnos.id_sucursal', $sucursales)
             ->orderByDesc('hora_fin_atencion')
             ->limit(10)
@@ -74,7 +71,7 @@ class PantallaController extends Controller
                 'ventanillas.nombre as ventanilla'
             ]);
 
-        // 🔥 SI ES AJAX → JSON
+        // 🔄 AJAX
         if ($request->ajax()) {
             return response()->json([
                 'actuales'  => $actuales,
@@ -83,7 +80,7 @@ class PantallaController extends Controller
             ]);
         }
 
-        // 🔥 SI ES NORMAL → VISTA
+        // 🖥️ VISTA PANTALLA PÚBLICA
         return view('pantalla.publica', compact(
             'actuales',
             'cola',
@@ -92,3 +89,4 @@ class PantallaController extends Controller
         ));
     }
 }
+

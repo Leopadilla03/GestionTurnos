@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Operador\OperadorController;
 use App\Http\Controllers\Pantalla\PantallaController;
+use App\Http\Controllers\KioscoController;
 
 /*
 Route::get('/', function () {
@@ -36,6 +37,14 @@ Route::get('/pantalla/HN', [PantallaController::class, 'index'])->name('pantalla
 // Pantalla pública específica para San José (Costa Rica)
 Route::get('/pantalla/CR', [PantallaController::class, 'publicaPorPais'])->name('pantalla.sanjose')->defaults('pais', 'CR');
 
+// Kiosco Honduras (por defecto)
+Route::get('/kiosco', [KioscoController::class, 'index'])->name('kiosco.index');
+Route::get('/kiosco/hn', [KioscoController::class, 'index'])->defaults('pais', 'HN')->name('kiosco.hn');
+Route::post('/kiosco/turno', [KioscoController::class, 'generarTurno'])->name('kiosco.turno');
+
+// Kiosco Costa Rica
+Route::get('/kiosco/cr', [KioscoController::class, 'index'])->defaults('pais', 'CR')->name('kiosco.cr');
+Route::post('/kiosco/cr/turno', [KioscoController::class, 'generarTurno'])->defaults('pais', 'CR')->name('kiosco.cr.turno');
 
 /*
 |--------------------------------------------------------------------------

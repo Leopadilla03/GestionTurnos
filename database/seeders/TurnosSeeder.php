@@ -11,10 +11,12 @@ class TurnosSeeder extends Seeder
 {
     public function run()
     {
+        
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('turnos')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
+        /*
         $totalNormal = 27;
         $totalPref = 13;
 
@@ -63,5 +65,6 @@ class TurnosSeeder extends Seeder
         }
 
         DB::table('turnos')->insert($turnos);
+        */
     }
 }

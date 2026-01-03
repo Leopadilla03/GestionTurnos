@@ -23,4 +23,8 @@ class Departamento extends Model
     public function ventanillas() {
         return $this->hasMany(Ventanilla::class, 'id_departamento');
     }
+
+    public function sucursal(){
+        return $this->belongsTo(Sucursal::class, 'id_sucursal');
+    }
 }

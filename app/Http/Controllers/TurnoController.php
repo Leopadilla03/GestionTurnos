@@ -39,32 +39,62 @@ class TurnoController extends Controller
      */
     public function store(Request $request)
     {
+        /*
         $request->validate([
-            'id_cliente' => 'required|exists:clientes,id_cliente',
             'id_departamento' => 'required|exists:departamentos,id_departamento',
             'tipo' => 'required|in:normal,preferencial',
+            'documento' => 'required|string|min:9|max:13'
         ]);
 
-        // Obtener el último número de turno del departamento
-        $ultimoTurno = Turno::where('id_departamento', $request->id_departamento)
-            ->orderBy('id_turno', 'desc')
-            ->first();
+        DB::beginTransaction();
 
-        $nuevoNumero = $ultimoTurno ? $ultimoTurno->id_turno + 1 : 1;
+        try {
+            // 1️⃣ Buscar o crear cliente
+            $cliente = \App\Models\Cliente::firstOrCreate(
+                ['documento' => $request->documento],
+                ['nombre' => 'Cliente']
+            );
 
-        $turno = Turno::create([
-            'numero' => 'T-' . str_pad($nuevoNumero, 3, '0', STR_PAD_LEFT),
-            'tipo' => $request->tipo,
-            'estado' => 'espera',
-            'id_cliente' => $request->id_cliente,
-            'id_departamento' => $request->id_departamento,
-        ]);
+            // 2️⃣ Prefijo según tipo
+            $prefijo = $request->tipo === 'preferencial' ? 'P' : 'N';
 
-        return response()->json([
-            'message' => 'Turno generado exitosamente',
-            'data' => $turno
-        ], 201);
+            // 3️⃣ Último turno DEL MISMO TIPO y departamento
+            $ultimo = Turno::where('id_departamento', $request->id_departamento)
+                ->where('tipo', $request->tipo)
+                ->where('numero', 'like', $prefijo.'%')
+                ->orderBy('id_turno', 'desc')
+                ->lockForUpdate()
+                ->first();
+
+            $consecutivo = $ultimo
+                ? intval(substr($ultimo->numero, 1)) + 1
+                : 1;
+
+            // 4️⃣ Crear turno (SOLO kiosco)
+            $turno = Turno::create([
+                'numero' => $prefijo . str_pad($consecutivo, 3, '0', STR_PAD_LEFT),
+                'tipo' => $request->tipo,
+                'estado' => 'espera',
+                'id_cliente' => $cliente->id_cliente,
+                'id_departamento' => $request->id_departamento,
+                'hora_creacion' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'mensaje' => "Turno {$turno->numero} generado correctamente",
+                'turno' => $turno
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Los turnos solo se generan desde el kiosco'], 403);
+        }
+            */
+         abort(403, 'Los turnos solo se generan desde el kiosco');
     }
+
 
     /**
      * 🔍 Mostrar un turno específico
@@ -120,58 +150,77 @@ class TurnoController extends Controller
      * 🎯 Obtener el siguiente turno en espera para un departamento
      */
     public function siguienteTurno()
-{
-    $usuario = Auth::user();
+    {
+        $usuario = Auth::user();
 
-    // 1️⃣ Obtener la ventanilla activa del cajero
-    $asignacion = UsuarioXVentanilla::where('id_usuario', $usuario->id_usuario)
-        ->where('estado', 'abierta')
-        ->first();
 
-    if (!$asignacion) {
-        return response()->json([
-            'error' => 'No tiene una caja asignada'
-        ], 403);
-    }
-
-    $ventanilla = $asignacion->ventanilla;
-
-    // 2️⃣ Buscar el turno más antiguo del departamento
-    DB::beginTransaction();
-
-    try {
-        $turno = Turno::where('estado', 'espera')
-            ->where('id_departamento', $ventanilla->id_departamento)
-            ->orderBy('hora_creacion', 'asc')
-            ->lockForUpdate()
+        // 1️⃣ Detectar la caja del cajero
+        $asignacion = UsuarioXVentanilla::where('id_usuario', $usuario->id_usuario)
+            ->where('estado', 'abierta')
             ->first();
 
-        if (!$turno) {
-            DB::rollBack();
+        if (!$asignacion) {
             return response()->json([
-                'mensaje' => 'No hay turnos en espera'
-            ]);
+                'error' => 'No tiene una caja asignada'
+            ], 403);
         }
 
-        // 3️⃣ Asignar turno a la caja y cajero
-        $turno->update([
-            'estado' => 'atendiendo',
-            'id_ventanilla' => $ventanilla->id_ventanilla,
-            'id_usuario' => $usuario->id_usuario,
-            'hora_inicio_atencion' => now(),
-        ]);
+        $ventanilla = $asignacion->ventanilla;
 
-        DB::commit();
+        $turnoActivo = Turno::where('id_ventanilla', $ventanilla->id_ventanilla)
+            ->whereIn('estado', ['atendiendo', 'pausado'])
+            ->first();
 
-        return response()->json([
-            'turno' => $turno->numero,
-            'caja'  => $ventanilla->nombre,
-            'mensaje' => "Turno {$turno->numero}, pase a {$ventanilla->nombre}"
-        ]);
+        if ($turnoActivo) {
+            return response()->json([
+                'error' => 'Debe finalizar o pausar el turno actual antes de llamar otro'
+            ], 409);
+        }
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['error' => 'Error al llamar turno'], 500);
+
+        DB::beginTransaction();
+
+        try {
+            // 2️⃣ Tomar el siguiente turno EN ESPERA del departamento
+            $turno = Turno::where('estado', 'espera')
+                ->where('id_departamento', $ventanilla->id_departamento)
+                ->whereNull('id_ventanilla')
+                ->orderByRaw("CASE WHEN tipo='preferencial' THEN 0 ELSE 1 END")
+                ->orderBy('hora_creacion', 'asc')
+                ->lockForUpdate()
+                ->first();
+
+            if (!$turno) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => 'No hay turnos en espera'
+                ]);
+            }
+
+            // 3️⃣ Asignar turno al cajero y a la caja
+            $turno->update([
+                'estado' => 'atendiendo',
+                'id_ventanilla' => $ventanilla->id_ventanilla,
+                'id_usuario' => $usuario->id_usuario,
+                'hora_inicio_atencion' => now(),
+            ]);
+
+            DB::commit();
+
+            // 4️⃣ Mensaje real
+            return response()->json([
+                'success' => true,
+                'turno' => [
+                    'numero' => $turno->numero,
+                    'ventanilla' => $ventanilla->nombre,
+                    'departamento' => $ventanilla->departamento->nombre
+                ],
+                'mensaje' => "Turno {$turno->numero}, pase a {$ventanilla->nombre}"
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Error al llamar turno'], 500);
+        }
     }
-}
 }

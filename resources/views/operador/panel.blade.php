@@ -117,24 +117,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // 🔵 Llamar siguiente turno
     document.getElementById('btnLlamar').onclick = async () => {
         const r = await postData('{{ route("operador.llamar") }}');
-        msg.innerHTML = r.success
-            ? `<div class="alert alert-success">${r.success}</div>`
-            : `<div class="alert alert-danger">${r.error}</div>`;
 
-        if (r.turno) {
-            // 🔹 Muestra el turno y lo marca como “Atendiendo”
+        if (r.success) {
+            msg.innerHTML = `<div class="alert alert-success">${r.success}</div>`;
+
             turnoLabel.innerHTML = `
                 <div>${r.turno.numero}</div>
                 <small class="text-muted fs-5">Pase a ${r.turno.ventanilla}</small>
-            `;           
-            turnoLabel.classList.remove('text-warning', 'text-success', 'text-muted');
-            turnoLabel.classList.add('text-primary');
+            `;
 
+            turnoLabel.className = 'display-3 fw-bold text-primary';
             estadoLabel.textContent = 'Atendiendo';
-            estadoLabel.classList.remove('text-warning', 'text-success', 'text-muted');
-            estadoLabel.classList.add('text-primary', 'animate__animated', 'animate__pulse');
+            estadoLabel.className = 'fs-4 fw-semibold text-primary';
+        } else {
+            msg.innerHTML = `<div class="alert alert-danger">${r.error}</div>`;
         }
     };
+
 
     // 🟡 Pausar turno
     document.getElementById('btnPausar').onclick = async () => {

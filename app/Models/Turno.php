@@ -11,20 +11,25 @@ class Turno extends Model
 
     protected $table = 'turnos';
     protected $primaryKey = 'id_turno';
-    public $timestamps = true;
 
     protected $fillable = [
         'numero',
         'tipo',
         'estado',
+        'origen',
+        'id_cliente',
+        'id_departamento',
+        'id_sucursal',
+        'id_ventanilla',
+        'id_usuario',
         'hora_creacion',
         'hora_inicio_atencion',
         'hora_fin_atencion',
-        'id_cliente',
-        'id_departamento',
-        'id_ventanilla',
     ];
 
+    public $timestamps = false;
+
+    // Relaciones
     public function cliente() {
         return $this->belongsTo(Cliente::class, 'id_cliente');
     }
@@ -37,11 +42,7 @@ class Turno extends Model
         return $this->belongsTo(Ventanilla::class, 'id_ventanilla');
     }
 
-    public function cola() {
-        return $this->hasOne(ColaTurno::class, 'id_turno');
-    }
-
-    public function registros() {
-        return $this->hasMany(Registro::class, 'id_turno');
+    public function usuario() {
+        return $this->belongsTo(Usuario::class, 'id_usuario');
     }
 }

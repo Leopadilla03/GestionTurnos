@@ -16,20 +16,20 @@ class ClientesSeeder extends Seeder
 
         $clientes = [];
 
-        // 27 clientes normales
+        // 🇭🇳 HONDURAS - 27 clientes normales
         for ($i = 1; $i <= 27; $i++) {
             $clientes[] = [
-                'documento' => 'HN' . str_pad($i, 10, '0', STR_PAD_LEFT),
+                'documento' => '0801' . str_pad($i, 9, '0', STR_PAD_LEFT),
                 'tipo_preferencial' => 'normal',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ];
         }
 
-        // 13 clientes preferenciales
-        for ($i = 28; $i <= 40; $i++) {
+        // 🇨🇷 COSTA RICA - 13 clientes preferenciales
+        for ($i = 1; $i <= 13; $i++) {
             $clientes[] = [
-                'documento' => 'CR' . str_pad($i, 10, '0', STR_PAD_LEFT),
+                'documento' => 'CR' . str_pad($i, 11, '0', STR_PAD_LEFT),
                 'tipo_preferencial' => 'preferencial',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),

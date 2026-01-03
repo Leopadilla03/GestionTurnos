@@ -35,7 +35,6 @@ class ChartService
                         'ticks' => [
                             'beginAtZero' => true,
                             'min' => 0,
-                            'max' => 10,
                             'stepSize' => 1,
                         ]
                     ]]

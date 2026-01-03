@@ -14,9 +14,9 @@ class UsuariosSeeder extends Seeder
 
             // Honduras - Tegucigalpa
             [
-                'id_usuario' => 1,
-                'nombre' => 'Administrador CREDI Q Honduras',
-                'email' => 'admin_hn@crediq.com',
+                //Administrador CREDI Q Honduras
+                'nombre' => 'Leonardo Padilla',
+                'email' => 'leopadilla_hn@crediq.com',
                 'password' => Hash::make('admin123'),
                 'rol' => 'administrador',
                 'estado' => 'activo',
@@ -24,52 +24,136 @@ class UsuariosSeeder extends Seeder
                 'id_departamento' => null,
                 'id_pais' => 1, // Honduras
             ],
+                // =========================
+                // CAJAS – TGU
+                // =========================
                 [
-                    'id_usuario' => 2,
-                    'nombre' => 'Operador Tegucigalpa Cajas',
-                    'email' => 'operador_tgu_cajas@crediq.com',
-                    'password' => Hash::make('cajas123'),
+                    'nombre' => 'Juan Pérez',
+                    'email' => 'juanperez_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 1, // Tegucigalpa
+                    'id_sucursal' => 1,
                     'id_departamento' => 1, // Cajas
                 ],
                 [
-                    'id_usuario' => 3,
-                    'nombre' => 'Operador Tegucigalpa Créditos',
-                    'email' => 'operador_tgu_creditos@crediq.com',
-                    'password' => Hash::make('creditos123'),
+                    'nombre' => 'Ana Rodríguez',
+                    'email' => 'anarodriguez_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 1, // Tegucigalpa
-                    'id_departamento' => 2, // Creditos
+                    'id_sucursal' => 1,
+                    'id_departamento' => 1,
                 ],
                 [
-                    'id_usuario' => 4,
-                    'nombre' => 'Operador Tegucigalpa Atención al Cliente',
-                    'email' => 'operador_tgu_atencion@crediq.com',
-                    'password' => Hash::make('atencion123'),
+                    'nombre' => 'Josue Mejía',
+                    'email' => 'josuemejia_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 1, // Tegucigalpa
-                    'id_departamento' => 3, // Atención al Cliente
+                    'id_sucursal' => 1,
+                    'id_departamento' => 1,
+                ],
+
+                // =========================
+                // CRÉDITOS – TGU
+                // =========================
+                [
+                    'nombre' => 'María López',
+                    'email' => 'marialopez_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 2,
                 ],
                 [
-                    'id_usuario' => 5,
-                    'nombre' => 'Operador Tegucigalpa Servicio Técnico',
-                    'email' => 'operador_tgu_mservicio@crediq.com',
+                    'nombre' => 'Luis Hernández',
+                    'email' => 'luishernandez_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 2,
+                ],
+                [
+                    'nombre' => 'Paola Castillo',
+                    'email' => 'paolacastillo_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 2,
+                ],
+
+                // =========================
+                // ATENCIÓN AL CLIENTE – TGU
+                // =========================
+                [
+                    'nombre' => 'Carlos Martínez',
+                    'email' => 'carlosmartinez_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 3,
+                ],
+                [
+                    'nombre' => 'Sofía Morales',
+                    'email' => 'sofiamorales_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 3,
+                ],
+                [
+                    'nombre' => 'Daniel Reyes',
+                    'email' => 'danielreyes_hn@crediq.com',
+                    'password' => Hash::make('crediq123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 3,
+                ],
+
+                // =========================
+                // SERVICIO TÉCNICO – TGU
+                // =========================
+                [
+                    'nombre' => 'Alex Rodríguez',
+                    'email' => 'alexrodriguez_servicio_hn@crediq.com',
                     'password' => Hash::make('servicio123'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 1, // Tegucigalpa
-                    'id_departamento' => 4, // Mantenimiento y Garantías
+                    'id_sucursal' => 1,
+                    'id_departamento' => 4,
+                ],
+                [
+                    'nombre' => 'Kevin Flores',
+                    'email' => 'kevinflores_servicio_hn@crediq.com',
+                    'password' => Hash::make('servicio123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 4,
+                ],
+                [
+                    'nombre' => 'Jorge Pineda',
+                    'email' => 'jorgepineda_servicio_hn@crediq.com',
+                    'password' => Hash::make('servicio123'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 1,
+                    'id_departamento' => 4,
                 ],
 
+                
             // Costa Rica - San José
             [
-                'id_usuario' => 6,
-                'nombre' => 'Administrador CREDI Q Costa Rica',
-                'email' => 'admin_cr@crediq.com',
+                //Administrador CREDI Q Costa Rica
+                'nombre' => 'Jose Mario Arce',
+                'email' => 'jmarce_cr@crediq.com',
                 'password' => Hash::make('admin456'),
                 'rol' => 'administrador',
                 'estado' => 'activo',
@@ -77,45 +161,129 @@ class UsuariosSeeder extends Seeder
                 'id_departamento' => null,
                 'id_pais' => 2, // Costa Rica
             ],
+            
+                // =========================
+                // CAJAS – SJ
+                // =========================
                 [
-                    'id_usuario' => 7,
-                    'nombre' => 'Operador San José Cajas',
-                    'email' => 'operador_sj_cajas@crediq.com',
-                    'password' => Hash::make('cajas456'),
+                    'nombre' => 'José Ramírez',
+                    'email' => 'jramirez_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 2, // San José
+                    'id_sucursal' => 2,
                     'id_departamento' => 1, // Cajas
                 ],
                 [
-                    'id_usuario' => 8,
-                    'nombre' => 'Operador San José Créditos',
-                    'email' => 'operador_sj_creditos@crediq.com',
-                    'password' => Hash::make('creditos456'),
+                    'nombre' => 'Daniela Vargas',
+                    'email' => 'dvargas_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 2, // San José
-                    'id_departamento' => 2, // Creditos
+                    'id_sucursal' => 2,
+                    'id_departamento' => 1,
                 ],
                 [
-                    'id_usuario' => 9,
-                    'nombre' => 'Operador San José Atención al Cliente',
-                    'email' => 'operador_sj_atencion@crediq.com',
-                    'password' => Hash::make('atencion456'),
+                    'nombre' => 'Esteban Mora',
+                    'email' => 'emora_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 2, // San José
-                    'id_departamento' => 3, // Atención al Cliente
+                    'id_sucursal' => 2,
+                    'id_departamento' => 1,
+                ],
+
+                // =========================
+                // CRÉDITOS – SJ
+                // =========================
+                [
+                    'nombre' => 'Valeria Chaves',
+                    'email' => 'vchaves_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 2,
                 ],
                 [
-                    'id_usuario' => 10,
-                    'nombre' => 'Operador San José Servicio Técnico',
-                    'email' => 'operador_sj_servicio@crediq.com',
-                    'password' => Hash::make('servicio456'),
+                    'nombre' => 'Mauricio Rojas',
+                    'email' => 'mrojas_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
                     'rol' => 'operador',
                     'estado' => 'activo',
-                    'id_sucursal' => 2, // San José
-                    'id_departamento' => 4, // Mantenimiento y Garantías
+                    'id_sucursal' => 2,
+                    'id_departamento' => 2,
+                ],
+                [
+                    'nombre' => 'Natalia Soto',
+                    'email' => 'nsoto_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 2,
+                ],
+
+                // =========================
+                // ATENCIÓN AL CLIENTE – SJ
+                // =========================
+                [
+                    'nombre' => 'Carlos Jiménez',
+                    'email' => 'cjimenez_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 3,
+                ],
+                [
+                    'nombre' => 'Fernanda León',
+                    'email' => 'fleon_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 3,
+                ],
+                [
+                    'nombre' => 'Ricardo Solís',
+                    'email' => 'rsolis_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 3,
+                ],
+
+                // =========================
+                // SERVICIO TÉCNICO – SJ
+                // =========================
+                [
+                    'nombre' => 'Pablo Navarro',
+                    'email' => 'pnavarro_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 4,
+                ],
+                [
+                    'nombre' => 'Sergio Calderón',
+                    'email' => 'scalderon_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 4,
+                ],
+                [
+                    'nombre' => 'Diego Herrera',
+                    'email' => 'dherrera_cr@crediq.com',
+                    'password' => Hash::make('crediq456'),
+                    'rol' => 'operador',
+                    'estado' => 'activo',
+                    'id_sucursal' => 2,
+                    'id_departamento' => 4,
                 ],
         ];
 

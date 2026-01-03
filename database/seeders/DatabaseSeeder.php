@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             UsuariosSeeder::class,
             VentanillasSeeder::class,
             ClientesSeeder::class,
-            TurnosSeeder::class,
+            //TurnosSeeder::class,
             UsuarioVentanillaSeeder::class,
         ]);
     }   

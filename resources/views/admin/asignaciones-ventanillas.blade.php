@@ -19,7 +19,6 @@
                     <tr>
                         <th>Operador</th>
                         <th>Sucursal</th>
-                        <th>Departamento</th>
                         <th>Asignación Actual</th>
                         <th>Asignar Nueva</th>
                         <th>Acción</th>
@@ -35,7 +34,6 @@
                     <tr>
                         <td class="fw-bold">{{ $op->nombre }}</td>
                         <td>{{ $op->sucursal->nombre ?? '-' }}</td>
-                        <td>{{ $op->departamento->nombre ?? '-' }}</td>
 
                         <td>
                             @if($asign)

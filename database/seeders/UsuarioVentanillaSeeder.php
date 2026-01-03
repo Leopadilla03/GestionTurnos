@@ -10,64 +10,39 @@ class UsuarioVentanillaSeeder extends Seeder
 {
     public function run(): void
     {
-        // Limpiar tabla antes de insertar
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('usuario_x_ventanilla')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-        $asignaciones = [
-            // HONDURAS - Tegucigalpa (ventanillas 1..4)
-            [
-                'id_usuario' => 2,
-                'id_ventanilla' => 1, // Caja 1 - TGU (Cajas)
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
-            [
-                'id_usuario' => 3,
-                'id_ventanilla' => 2, // Créditos 1 - TGU (Créditos)
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
-            [
-                'id_usuario' => 4,
-                'id_ventanilla' => 3, // Atención al cliente 1 - TGU (Atención)
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
-            [
-                'id_usuario' => 5,
-                'id_ventanilla' => 4, // Servicio Técnico 1 - TGU (Mantenimiento)
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
-
-            // COSTA RICA - San José (ventanillas 5..8)
-            [
-                'id_usuario' => 7,
-                'id_ventanilla' => 5, // Caja 2 - SJ
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
-            [
-                'id_usuario' => 8,
-                'id_ventanilla' => 6, // Créditos 2 - SJ
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
-            [
-                'id_usuario' => 9,
-                'id_ventanilla' => 7, // Atención al Cliente 2 - SJ
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
-            [
-                'id_usuario' => 10,
-                'id_ventanilla' => 8, // Servicio Técnico 2 - SJ
-                'hora_inicio' => Carbon::now(),
-                'estado' => 'abierta',
-            ],
+/*
+        $map = [
+            'juanperez_caja1@crediq.com'     => 'Caja 1 - TGU',
+            'anarodriguez_caja2@crediq.com'      => 'Caja 2 - TGU',
+            'josuemejia_caja3@crediq.com'    => 'Caja 3 - TGU',
+            'marialopez_creditos1@crediq.com' => 'Créditos 1 - TGU',
+            'luishernandez_creditos2@crediq.com' => 'Créditos 2 - TGU',
+            'paolacastillo_creditos3@crediq.com' => 'Créditos 3 - TGU',
+            'carlosmartinez_atencion1@crediq.com' => 'Atención al cliente 1 - TGU',
+            'sofiamorales_atencion2@crediq.com' => 'Atención al cliente 2 - TGU',
+            'danielreyes_atencion3@crediq.com' => 'Atención al cliente 3 - TGU',
+            'alexrodriguez_servicio1@crediq.com' => 'Servicio Técnico 1 - TGU',
+            'kevinflores_servicio2@crediq.com' => 'Servicio Técnico 2 - TGU',
+            'jorgepineda_servicio3@crediq.com' => 'Servicio Técnico 3 - TGU',
         ];
-        DB::table('usuario_x_ventanilla')->insert($asignaciones);
+
+        foreach ($map as $email => $ventanillaNombre) {
+
+            $usuario = DB::table('usuarios')->where('email', $email)->first();
+            $ventanilla = DB::table('ventanillas')->where('nombre', $ventanillaNombre)->first();
+
+            if ($usuario && $ventanilla) {
+                DB::table('usuario_x_ventanilla')->insert([
+                    'id_usuario' => $usuario->id_usuario,
+                    'id_ventanilla' => $ventanilla->id_ventanilla,
+                    'hora_inicio' => Carbon::now(),
+                    'estado' => 'abierta',
+                ]);
+            }
+        }
+    */
     }
 }

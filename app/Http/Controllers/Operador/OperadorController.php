@@ -42,19 +42,19 @@ class OperadorController extends Controller
             ->first();
 
         // Cola: solo turnos en espera del mismo departamento y sin ventanilla asignada
-        $cola = Turno::where('id_departamento', $ventanilla->id_departamento)
-            ->where('estado', 'espera')
-            ->whereNull('id_ventanilla') // evita tomar turnos que ya pertenezcan a otra ventanilla
-            ->where('id_sucursal', $ventanilla->id_sucursal) // asegurar misma sucursal
-            ->orderByRaw("(CASE WHEN tipo = 'preferencial' THEN 0 ELSE 1 END)")
-            ->orderBy(DB::raw("CAST(SUBSTRING_INDEX(numero, '-', -1) AS UNSIGNED)"), 'asc')
-            ->get();
+       $cola = Turno::where('estado', 'espera')
+        ->where('origen', 'kiosco')
+        ->where('id_departamento', $ventanilla->id_departamento)
+        ->where('id_sucursal', $ventanilla->id_sucursal)
+        ->orderByRaw("CASE WHEN tipo='preferencial' THEN 0 ELSE 1 END")
+        ->orderBy('hora_creacion')
+        ->get();
 
         return view('operador.panel', compact('ventanilla', 'turnoActual', 'cola'));
     }
 
     /**
-     * Llamar siguiente turno con lógica 2N -> 1P aproximada.
+     * Llamar siguiente turno 
      */
     public function llamar(Request $request)
     {
@@ -81,7 +81,7 @@ class OperadorController extends Controller
             $turno = DB::transaction(function () use ($departamentoId, $sucursalId, $ventanilla) {
                 // Intentamos obtener el turno disponible que cumpla:
                 // 1) tipo preferencial antes que normal
-                // 2) dentro de cada tipo, por hora_creacion asc
+                // 2) dentro de cada tipo, por hora_creacion asc (FIFO)
                 // 3) estado = espera, id_ventanilla = null, misma sucursal y departamento
                 //
                 // Hacemos lockForUpdate para que dos procesos no tomen el mismo turno.
@@ -91,8 +91,8 @@ class OperadorController extends Controller
                     ->whereNull('id_ventanilla')
                     // Priorizar PREFERENCIAL (si tu valor es 'preferencial' y 'normal')
                     ->orderByRaw("(CASE WHEN tipo = 'preferencial' THEN 0 ELSE 1 END) ASC")
-                    // usar hora_creacion si existe, si no, fallback a created_at
-                    ->orderBy(DB::raw("CAST(SUBSTRING_INDEX(numero, '-', -1) AS UNSIGNED)"), 'asc');
+                    // Ordenar por hora_creacion para FIFO dentro de tipos
+                    ->orderBy('hora_creacion', 'asc');
 
                 // Tomar el primer registro con lock
                 $turno = $query->lockForUpdate()->first();
@@ -129,8 +129,6 @@ class OperadorController extends Controller
             return response()->json(['error' => 'Error al llamar turno: ' . $e->getMessage()], 500);
         }
     }
-
-
 
     /**
      * Pausar / reanudar turno
@@ -223,7 +221,31 @@ class OperadorController extends Controller
             return response()->json(['error' => 'Error al transferir: ' . $e->getMessage()], 500);
         }
     }
+/*
+    // Estado ausente 
+    public function ausente(Request $request)
+    {
+        $usuario = $request->user();
 
+        UsuarioXVentanilla::where('id_usuario', $usuario->id_usuario)
+            ->where('estado', 'abierta')
+            ->update(['estado' => 'pausada']);
+
+        return response()->json(['ok' => true]);
+    }
+
+    // Regresar de ausente
+    public function regresar(Request $request)
+    {
+        $usuario = $request->user();
+
+        UsuarioXVentanilla::where('id_usuario', $usuario->id_usuario)
+            ->where('estado', 'pausada')
+            ->update(['estado' => 'abierta']);
+
+        return response()->json(['ok' => true]);
+    }
+*/
     /**
      * Historial de la ventanilla del operador
      */
@@ -254,7 +276,6 @@ class OperadorController extends Controller
             return back()->with('error', 'Error al cargar historial: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Asignar una ventanilla libre al operador (crea un registro usuario_x_ventanilla)

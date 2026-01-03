@@ -514,11 +514,15 @@ class AdminController extends Controller
         $ventanillaId = $request->input('ventanilla', null);
         $departamentoId = $request->input('departamento', null);
 
-        // Base query: solo turnos finalizados en sucursales del admin, con rango de fecha de finalización
-        $query = DB::table('turnos')
-            ->where('turnos.estado', 'finalizado')
-            ->whereBetween('turnos.hora_fin_atencion', [$fechaInicio . " 00:00:00", $fechaFin . " 23:59:59"])
-            ->whereIn('turnos.id_sucursal', $sucursalesAdmin);
+                // Base query: solo turnos finalizados en sucursales del admin (considerando id_sucursal en turnos o ventanillas)
+                $query = DB::table('turnos')
+                        ->leftJoin('ventanillas', 'ventanillas.id_ventanilla', '=', 'turnos.id_ventanilla')
+                        ->where('turnos.estado', 'finalizado')
+                        ->whereBetween('turnos.hora_fin_atencion', [$fechaInicio . " 00:00:00", $fechaFin . " 23:59:59"])
+                        ->where(function($q) use ($sucursalesAdmin) {
+                                $q->whereIn('turnos.id_sucursal', $sucursalesAdmin)
+                                    ->orWhereIn('ventanillas.id_sucursal', $sucursalesAdmin);
+                        });
 
         if ($ventanillaId) {
             $query->where('turnos.id_ventanilla', $ventanillaId);
@@ -550,7 +554,6 @@ class AdminController extends Controller
 
         // turnos por ventanilla
         $turnosPorVentanilla = (clone $query)
-            ->leftJoin('ventanillas', 'ventanillas.id_ventanilla', '=', 'turnos.id_ventanilla')
             ->select('ventanillas.nombre', DB::raw('COUNT(turnos.id_turno) as total'))
             ->groupBy('ventanillas.nombre')
             ->get();
@@ -618,7 +621,6 @@ class AdminController extends Controller
                         'yAxes' => [[
                             'ticks' => [
                                 'min' => 0,
-                                'max' => 10,
                                 'stepSize' => 1,
                                 'beginAtZero' => true
                             ]
@@ -626,7 +628,6 @@ class AdminController extends Controller
                     ]
                 ]
             ];
-
             $chartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode($chartConfig)) . '&r=' . time();
         }
 
@@ -649,7 +650,6 @@ class AdminController extends Controller
         ));
     }
 
-
     public function reportesPdf(Request $request)
     {
         $user = Auth::user();
@@ -660,11 +660,16 @@ class AdminController extends Controller
         $ventanillaId = $request->input('ventanilla', null);
         $departamentoId = $request->input('departamento', null);
 
-        // Base query: solo turnos finalizados en sucursales del admin
+        // Base query: solo turnos finalizados en sucursales del admin, con rango de fecha de finalización
+        // Nota: incluimos la sucursal de la ventanilla para no perder turnos antiguos sin id_sucursal en la tabla turnos
         $query = DB::table('turnos')
+            ->leftJoin('ventanillas', 'ventanillas.id_ventanilla', '=', 'turnos.id_ventanilla')
             ->where('turnos.estado', 'finalizado')
             ->whereBetween('turnos.hora_fin_atencion', [$fechaInicio . " 00:00:00", $fechaFin . " 23:59:59"])
-            ->whereIn('turnos.id_sucursal', $sucursalesAdmin);
+            ->where(function($q) use ($sucursalesAdmin) {
+                $q->whereIn('turnos.id_sucursal', $sucursalesAdmin)
+                  ->orWhereIn('ventanillas.id_sucursal', $sucursalesAdmin);
+            });
 
         if ($ventanillaId) {
             $query->where('turnos.id_ventanilla', $ventanillaId);
@@ -682,10 +687,10 @@ class AdminController extends Controller
             ->groupBy('tipo')
             ->get();
 
-        // turnos por estado
+        // turnos por estado (estado de turnos, no de ventanillas)
         $turnosPorEstado = (clone $query)
-            ->select('estado', DB::raw('COUNT(id_turno) as total'))
-            ->groupBy('estado')
+            ->select('turnos.estado', DB::raw('COUNT(turnos.id_turno) as total'))
+            ->groupBy('turnos.estado')
             ->get();
 
         // turnos por departamento
@@ -728,36 +733,27 @@ class AdminController extends Controller
             $labels = $turnosPorDepto->pluck('nombre')->toArray();
             $data   = $turnosPorDepto->pluck('total')->toArray();
 
-            // Mapeo y paleta unificados para web y PDF
-            $departmentColorMap = [
-                'credito' => '#004B93', // azul para Créditos
-                'servicio' => '#F6C85F', // amarillo para Servicio Técnico
-                'cajas' => '#2ca02c',
-                'atención' => '#d62728',
-            ];
-            $palette = ['#004B93','#F6C85F','#2ca02c','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
-
-            // Función para obtener colores por departamento
-            $getDepartmentColors = function($labels) use ($departmentColorMap, $palette) {
+            // Función única para obtener colores por departamento (misma que web)
+            $getDepartmentColors = function($labels) {
+                // Mapeo exacto por nombre de departamento
+                $departmentColorMap = [
+                    'Créditos' => '#004B93',           // Azul
+                    'Servicio Técnico' => '#F6C85F',   // Amarillo
+                    'Cajas' => '#2ca02c',              // Verde
+                    'Atención al Cliente' => '#d62728',// Rojo
+                ];
+                $palette = ['#004B93','#F6C85F','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf'];
                 $bgColors = [];
                 foreach ($labels as $i => $label) {
-                    $labelLower = mb_strtolower($label);
-                    $found = false;
-                    foreach ($departmentColorMap as $key => $color) {
-                        if (mb_stripos($labelLower, $key) !== false) {
-                            $bgColors[] = $color;
-                            $found = true;
-                            break;
-                        }
-                    }
-                    if (!$found) {
+                    if (isset($departmentColorMap[$label])) {
+                        $bgColors[] = $departmentColorMap[$label];
+                    } else {
                         $bgColors[] = $palette[$i % count($palette)];
                     }
                 }
                 return $bgColors;
             };
 
-            // Usar la misma función para PDF
             $bgColorsPdf = $getDepartmentColors($labels);
 
             $chartConfig = [
@@ -777,7 +773,7 @@ class AdminController extends Controller
                         'title' => ['display' => true, 'text' => 'Turnos por Departamento'],
                         'legend' => ['display' => false]
                     ],
-                    'scales' => ['y' => ['type' => 'linear', 'beginAtZero' => true, 'min' => 0, 'max' => 10, 'ticks' => ['stepSize' => 1, 'callback' => 'function(v){return parseInt(v);}']]]
+                    'scales' => ['y' => ['type' => 'linear', 'beginAtZero' => true, 'ticks' => ['stepSize' => 1]]]
                 ]
             ];
             $chartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode($chartConfig));
@@ -802,6 +798,21 @@ class AdminController extends Controller
         $pref = $turnosPorTipo->firstWhere('tipo','preferencial')->total ?? 0;
         $normal = $turnosPorTipo->firstWhere('tipo','normal')->total ?? 0;
 
+        // Detalle de turnos atendidos (similar al modal del dashboard)
+        $turnosAtendidosDetalle = (clone $query)
+            ->join('sucursal', 'sucursal.id_sucursal', '=', 'ventanillas.id_sucursal')
+            ->leftJoin('departamentos', 'departamentos.id_departamento', '=', 'turnos.id_departamento')
+            ->select(
+                'turnos.numero',
+                'turnos.estado',
+                'departamentos.nombre as departamento',
+                'ventanillas.nombre as ventanilla',
+                'sucursal.nombre as sucursal',
+                DB::raw('DATE_FORMAT(turnos.hora_fin_atencion, "%d/%m/%Y") as fecha')
+            )
+            ->orderBy('turnos.hora_fin_atencion', 'desc')
+            ->get();
+
         // renderiza y descarga PDF
         $pdf = PDF::loadView('admin.reportes_pdf', [
             'chartJsonDepto',
@@ -820,6 +831,7 @@ class AdminController extends Controller
             'normal' => $normal,
             'promedioAtencion' => round($promedioAtencion, 2),
             'fechaInicio' => $fechaInicio,
+            'turnosAtendidosDetalle' => $turnosAtendidosDetalle,
         ]);
 
         return $pdf->download('reporte_turnos_' . now()->format('Ymd_His') . '.pdf');

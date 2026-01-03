@@ -1,7 +1,3 @@
-Estos son los códigos que se usa:
-
-reportes_pdf.blade.php:
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -52,6 +48,36 @@ reportes_pdf.blade.php:
         <h3>Gráfica de Turnos por Departamento</h3>
             <img src="{{ $chartUrlDepto }}" style="width:100%; max-width:800px;">
         </div>
+    @endif
+
+    <h3 style="page-break-before: always;">Detalle de Turnos Atendidos</h3>
+    @if(isset($turnosAtendidosDetalle) && $turnosAtendidosDetalle->count() > 0)
+        <table>
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Estado</th>
+                    <th>Departamento</th>
+                    <th>Ventanilla</th>
+                    <th>Sucursal</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($turnosAtendidosDetalle as $turno)
+                    <tr>
+                        <td>{{ $turno->numero ?? '-' }}</td>
+                        <td>{{ ucfirst($turno->estado ?? '-') }}</td>
+                        <td>{{ $turno->departamento ?? '-' }}</td>
+                        <td>{{ $turno->ventanilla ?? '-' }}</td>
+                        <td>{{ $turno->sucursal ?? '-' }}</td>
+                        <td>{{ $turno->fecha ?? '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p>No hay turnos atendidos en el rango seleccionado.</p>
     @endif
 
     <footer style="text-align:center; margin-top:30px; font-size: 10px;">

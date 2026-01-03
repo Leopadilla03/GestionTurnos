@@ -28,4 +28,8 @@ class Sucursal extends Model
     public function pantallas() {
         return $this->hasMany(Pantalla::class, 'id_sucursal');
     }
+
+    public function pais() {
+        return $this->belongsTo(Pais::class, 'id_pais');
+    }
 }
